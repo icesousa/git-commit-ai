@@ -1,0 +1,122 @@
+{
+    "name": "complete-commit-ai",
+    "displayName": "Complete Commit AI",
+    "description": "Generate commit messages based on staged changes using AI",
+    "version": "0.0.1",
+    "publisher": "icesousa",
+    "icon": "images/icon.png",
+    "engines": {
+        "vscode": "^1.97.0"
+    },
+    "categories": [
+        "SCM Providers",
+        "Other"
+    ],
+    "activationEvents": [
+        
+    ],
+    "main": "./dist/extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "complete-commit-ai.generateCommitMessage",
+                "title": "Generate Commit Message with AI"
+            }
+        ],
+        "menus": {
+            "scm/title": [
+                {
+                    "when": "scmProvider == git",
+                    "command": "complete-commit-ai.generateCommitMessage",
+                    "group": "navigation"
+                }
+            ]
+        },
+        "configuration": {
+            "title": "Complete Commit AI",
+            "properties": {
+                "complete-commit-ai.apiProvider": {
+                    "type": "string",
+                    "enum": [
+                        "openai",
+                        "gemini",
+                        "anthropic",
+                        "deepseek"
+                    ],
+                    "default": "openai",
+                    "description": "Select which AI provider to use"
+                },
+                "complete-commit-ai.apiStyle": {
+                    "type": "string",
+                    "enum": [
+                        "Normal - Up to 500 characters",
+                        "Concise - Up to 100 characters",
+                        "Detailed - No character limit"
+                    ],
+                    "default": "Concise - Up to 100 characters",
+                    "description": "Choose the AI-generated commit message style."
+                },
+                "complete-commit-ai.deepseekApiKey": {
+                    "type": "string",
+                    "default": "",
+                    "description": "API key for DeepSeek (chat v3)"
+                },
+                "complete-commit-ai.openaiApiKey": {
+                    "type": "string",
+                    "default": "",
+                    "description": "API key for OpenAI"
+                },
+                "complete-commit-ai.geminiApiKey": {
+                    "type": "string",
+                    "default": "",
+                    "description": "API key for Google's Gemini (2.0 Flash)"
+                },
+                "complete-commit-ai.anthropicApiKey": {
+                    "type": "string",
+                    "default": "",
+                    "description": "API key for Anthropic (Claude)"
+                },
+                "complete-commit-ai.commitLanguage": {
+                    "type": "string",
+                    "enum": [
+                        "English",
+                        "Spanish",
+                        "Mandarin Chinese",
+                        "Hindi",
+                        "French",
+                        "Arabic",
+                        "Portuguese",
+                        "Russian",
+                        "Japanese",
+                        "German"
+                    ],
+                    "default": "English",
+                    "description": "Select the language for generated commit messages"
+                }
+            }
+        }
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run package",
+        "compile": "webpack",
+        "watch": "webpack --watch",
+        "package": "webpack --mode production --devtool hidden-source-map",
+        "compile-tests": "tsc -p . --outDir out",
+        "watch-tests": "tsc -p . -w --outDir out",
+        "lint": "eslint src --ext ts"
+    },
+    "devDependencies": {
+        "@types/glob": "^8.1.0",
+        "@types/node": "20.x",
+        "@types/vscode": "^1.97.0",
+        "@vscode/test-electron": "^2.3.8",
+        "eslint": "^8.39.0",
+        "ts-loader": "^9.5.2",
+        "typescript": "^5.7.3",
+        "webpack": "^5.98.0",
+        "webpack-cli": "^5.1.4"
+    },
+    "dependencies": {
+        "axios": "^1.8.1"
+    }
+}
