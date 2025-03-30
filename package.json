@@ -21,7 +21,8 @@
         "commands": [
             {
                 "command": "complete-commit-ai.generateCommitMessage",
-                "title": "Generate Commit Message with AI"
+                "title": " Generate Commit Message with AI",
+                "icon": "$(sparkle)"
             }
         ],
         "menus": {

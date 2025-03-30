@@ -44,7 +44,81 @@ export function activate(context: vscode.ExtensionContext) {
       }
 
       try {
-        // Show loading message
+        // Get the diff of staged changes
+        const diff = await getGitStagedDiff(repo.rootUri.fsPath);
+
+        // Check which provider is configured
+        const config = vscode.workspace.getConfiguration("complete-commit-ai");
+        let provider = config.get<string>("apiProvider", "openai");
+        const style = config.get<string>("apiStyle", "Normal - Up to 500 characters");
+        // Get the selected language
+        const commitLanguage = config.get<string>("commitLanguage", "English");
+        
+        // Declare apiKey variable here, before usage in conditionals
+        let apiKey = "";
+        
+        // Check if the diff is too large (15KB is a reasonable threshold)
+        const LARGE_DIFF_THRESHOLD = 15 * 1024; // 15KB
+        const EXPENSIVE_PROVIDERS = ["openai", "anthropic"];
+        
+        if (diff.length > LARGE_DIFF_THRESHOLD && EXPENSIVE_PROVIDERS.includes(provider)) {
+          const warningMessage = `This commit contains a large amount of changes (${(diff.length/1024).toFixed(1)}KB), which may be expensive to process with ${provider.toUpperCase()}.`;
+          const userChoice = await vscode.window.showWarningMessage(
+            warningMessage,
+            "Continue Anyway",
+            "Switch to DeepSeek",
+            "Switch to Gemini",
+            "Cancel"
+          );
+          
+          if (userChoice === "Cancel") {
+            return;
+          } else if (userChoice === "Switch to DeepSeek") {
+            provider = "deepseek";
+            // Check if DeepSeek API key is configured
+            const deepseekApiKey = config.get<string>("deepseekApiKey", "");
+            if (!deepseekApiKey) {
+              await vscode.window.showWarningMessage(
+                `You have no API key configured for DeepSeek. Please add one in the extension settings.`,
+                "OK"
+              );
+              // Revert to original provider
+              provider = config.get<string>("apiProvider", "openai");
+            } else {
+              apiKey = deepseekApiKey;
+            }
+          } else if (userChoice === "Switch to Gemini") {
+            provider = "gemini";
+            // Check if Gemini API key is configured
+            const geminiApiKey = config.get<string>("geminiApiKey", "");
+            if (!geminiApiKey) {
+              await vscode.window.showWarningMessage(
+                `You have no API key configured for Gemini. Please add one in the extension settings.`,
+                "OK"
+              );
+              // Revert to original provider
+              provider = config.get<string>("apiProvider", "openai");
+            } else {
+              apiKey = geminiApiKey;
+            }
+          }
+        }
+        
+        // Check if API key is set for the selected provider
+        const apiKeyConfig = `${provider}ApiKey`;
+        // Update apiKey only if we haven't already set it in the conditional above
+        if (!apiKey) {
+          apiKey = config.get<string>(apiKeyConfig, "");
+        }
+        
+        if (!apiKey) {
+          vscode.window.showErrorMessage(
+            `Please set your ${provider} API key in the extension settings.`
+          );
+          return; // Exit early if no API key is found
+        }
+
+        // Show loading message only after validating API key
         vscode.window.withProgress(
           {
             location: vscode.ProgressLocation.Notification,
@@ -53,79 +127,6 @@ export function activate(context: vscode.ExtensionContext) {
           },
           async (progress) => {
             try {
-              // Get the diff of staged changes
-              const diff = await getGitStagedDiff(repo.rootUri.fsPath);
-
-              // Check which provider is configured
-              const config = vscode.workspace.getConfiguration("complete-commit-ai");
-              let provider = config.get<string>("apiProvider", "openai");
-              const style = config.get<string>("apiStyle", "Normal - Up to 500 characters");
-              // Get the selected language
-              const commitLanguage = config.get<string>("commitLanguage", "English");
-              
-              // Declare apiKey variable here, before usage in conditionals
-              let apiKey = "";
-              
-              // Check if the diff is too large (15KB is a reasonable threshold)
-              const LARGE_DIFF_THRESHOLD = 15 * 1024; // 15KB
-              const EXPENSIVE_PROVIDERS = ["openai", "anthropic"];
-              
-              if (diff.length > LARGE_DIFF_THRESHOLD && EXPENSIVE_PROVIDERS.includes(provider)) {
-                const warningMessage = `This commit contains a large amount of changes (${(diff.length/1024).toFixed(1)}KB), which may be expensive to process with ${provider.toUpperCase()}.`;
-                const userChoice = await vscode.window.showWarningMessage(
-                  warningMessage,
-                  "Continue Anyway",
-                  "Switch to DeepSeek",
-                  "Switch to Gemini",
-                  "Cancel"
-                );
-                
-                if (userChoice === "Cancel") {
-                  return;
-                } else if (userChoice === "Switch to DeepSeek") {
-                  provider = "deepseek";
-                  // Check if DeepSeek API key is configured
-                  const deepseekApiKey = config.get<string>("deepseekApiKey", "");
-                  if (!deepseekApiKey) {
-                    await vscode.window.showWarningMessage(
-                      `You have no API key configured for DeepSeek. Please add one in the extension settings.`,
-                      "OK"
-                    );
-                    // Revert to original provider
-                    provider = config.get<string>("apiProvider", "openai");
-                  } else {
-                    apiKey = deepseekApiKey;
-                  }
-                } else if (userChoice === "Switch to Gemini") {
-                  provider = "gemini";
-                  // Check if Gemini API key is configured
-                  const geminiApiKey = config.get<string>("geminiApiKey", "");
-                  if (!geminiApiKey) {
-                    await vscode.window.showWarningMessage(
-                      `You have no API key configured for Gemini. Please add one in the extension settings.`,
-                      "OK"
-                    );
-                    // Revert to original provider
-                    provider = config.get<string>("apiProvider", "openai");
-                  } else {
-                    apiKey = geminiApiKey;
-                  }
-                }
-              }
-              
-              // Check if API key is set for the selected provider
-              const apiKeyConfig = `${provider}ApiKey`;
-              // Update apiKey only if we haven't already set it in the conditional above
-              if (!apiKey) {
-                apiKey = config.get<string>(apiKeyConfig, "");
-              }
-              
-              if (!apiKey) {
-                throw new Error(
-                  `Please set your ${provider} API key in the extension settings`
-                );
-              }
-
               // Generate commit message
               const commitMessage = await generateCommitMessage(
                 provider,
@@ -141,8 +142,8 @@ export function activate(context: vscode.ExtensionContext) {
               vscode.window.showInformationMessage(
                 `Commit message generated!`
               );
-            } catch (error) {
-              throw error;
+            } catch (error: any) {
+              vscode.window.showErrorMessage(`Error generating commit message: ${error.message}`);
             }
           }
         );
