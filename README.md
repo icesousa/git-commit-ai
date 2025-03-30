@@ -25,20 +25,6 @@ A VS Code extension that generates meaningful git commit messages based on stage
 - VS Code Git extension enabled
 - API key for one of the supported AI providers (OpenAI, Gemini, Anthropic, or DeepSeek)
 
-## Extension Settings
-
-This extension contributes the following settings:
-
-* `complete-commit-ai.apiProvider`: Select which AI provider to use (openai, gemini, anthropic, deepseek)
-* `complete-commit-ai.apiStyle`: Choose the commit message style:
-  * `Concise - Up to 100 characters`: Brief, focused commit messages
-  * `Normal - Up to 500 characters`: Standard level of detail
-  * `Detailed - No character limit`: Comprehensive commit messages with implementation details
-* `complete-commit-ai.commitLanguage`: Select the language for generated commit messages
-* `complete-commit-ai.openaiApiKey`: API key for OpenAI (GPT-4o model)
-* `complete-commit-ai.geminiApiKey`: API key for Google's Gemini (2.0 Flash model)
-* `complete-commit-ai.anthropicApiKey`: API key for Anthropic (Claude 3 Sonnet model)
-* `complete-commit-ai.deepseekApiKey`: API key for DeepSeek (chat model)
 
 ## Installing your API Key
 
