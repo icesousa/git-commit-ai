@@ -4,16 +4,22 @@
     "description": "Generate commit messages based on staged changes using AI",
     "version": "0.0.1",
     "publisher": "icesousa",
-    "icon": "images/icon.png",
     "engines": {
         "vscode": "^1.97.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/icesousa/git-commit-ai.git"
     },
     "categories": [
         "SCM Providers",
         "Other"
     ],
-    "activationEvents": [
-        
+    "files": [
+        "dist",
+        "README.md",
+        "LICENSE",
+        "images/icon.png"
     ],
     "main": "./dist/extension.js",
     "contributes": {

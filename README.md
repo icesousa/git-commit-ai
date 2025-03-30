@@ -54,6 +54,8 @@ When working with particularly large diffs (>15KB), the extension will:
 2. Offer to switch to more cost-effective providers like DeepSeek or Gemini
 3. Allow you to continue with your preferred provider if desired
 
+
+
 ## License
 
 MIT
