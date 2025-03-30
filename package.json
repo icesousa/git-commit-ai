@@ -15,12 +15,6 @@
         "SCM Providers",
         "Other"
     ],
-    "files": [
-        "dist",
-        "README.md",
-        "LICENSE",
-        "images/icon.png"
-    ],
     "main": "./dist/extension.js",
     "contributes": {
         "commands": [
