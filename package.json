@@ -2,7 +2,7 @@
     "name": "complete-commit-ai",
     "displayName": "Complete Commit AI",
     "description": "Generate commit messages based on staged changes using AI",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "publisher": "icesousa",
     "engines": {
         "vscode": "^1.97.0"
